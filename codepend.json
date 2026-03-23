@@ -1,0 +1,28 @@
+{
+    "name": "TestRepo",
+    "rootFolder": "CoDependTests/TestRepo/",
+    "github": {
+        "url": "",
+        "branch": ""
+    },
+    "snapshotDir": "./.codepend",
+    "snapshotFile": "snapshot",
+    "saveLocation": "CoDependTests/TestRepo/diagrams/",
+    "exclusions": [
+        "obj/",
+        "bin/",
+        ".vs/",
+        ".git/",
+        ".idea/",
+        ".codepend"
+    ],
+    "fileExtensions": [
+        ".cs"
+    ],
+    "views": {
+        "Test": {
+            "packages": [],
+            "ignorePackages": []
+        }
+    }
+}

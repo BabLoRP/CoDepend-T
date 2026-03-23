@@ -1,0 +1,47 @@
+{
+    "name": "CoDepend",
+    "rootFolder": "CoDepend/",
+    "github": {
+        "url": "https://github.com/BabLoRP/CoDepend-T",
+        "branch": "main"
+    },
+    "snapshotDir": ".codepend",
+    "snapshotFile": "snapshot",
+    "saveLocation": "./diagrams/",
+    "exclusions": [
+        "obj/",
+        "bin/",
+        ".vs/",
+        ".git/",
+        ".gitignore",
+        ".idea/",
+        ".codepend",
+        "diagrams/"
+    ],
+    "fileExtensions": [
+        ".cs"
+    ],
+    "views": {
+        "completeView": {
+            "packages": [],
+            "ignorePackages": []
+        },
+        "detailedView": {
+            "packages": [
+                {
+                    "path": "Application",
+                    "depth": 1
+                },
+                {
+                    "path": "Infra",
+                    "depth": 2
+                },
+                {
+                    "path": "Domain",
+                    "depth": 2
+                }
+            ],
+            "ignorePackages": []
+        }
+    }
+}
