@@ -63,19 +63,18 @@ The codebase follows a layered architecture with three main layers and a thin CL
   <img src="docs/clean_architecture_illustrated.jpg" width="182" />
 </p>
 
-**Domain** contains the core models and logic that are independent of any external framework or I/O concern. **Application** contains the use cases that orchestrate the tool's workflow.
-**Infra** contains all implementations that deal with external concerns. Infra implements the interfaces defined in Domain and uses the use cases in Application.
-**Program.cs** is the CLI entry point. It reads configuration, selects the appropriate implementations via factories, and delegates to the Application use cases.
+**Domain** contains the core models and logic that are independent of any external framework or I/O concern.
+**Application** contains the use cases that orchestrate the tool's workflow.
+**Infra** contains all implementations that deal with external concerns / changing environments.
+**Program.cs** is the CLI entry point.
 
 ### Dependency Policy
 
 The project maintains a strict dependency direction between layers.
-
-- **Domain** does not reference Application or Infra. It defines interfaces that Infra implements.
-- **Application** depends on Domain only. It does not reference Infra or any concrete implementations.
-- **Infra** depends on Domain (to implement interfaces and use models) and on Application (to use types from the application layer where needed). Infra does not depend on Program.cs.
-- **Program.cs** depends on Infra and Application to wire everything together.
-
+**Domain** can not depend on anything outside its layer.
+**Application** can only depend on Domain and itself.
+**Infra** can depend on both Domain and Application.
+**Program.cs** can depend on everythig.
 Dependencies always flow inward.
 
 Please ensure that introduced changes, follows this dependency policy.
@@ -88,15 +87,31 @@ This project uses ArchLens to ensure that the solution complies with the describ
 
 Run the setup script from the repository root:
 
-```bash
+Windows:
+
+```pwsh
 ./setup_archlens.sh
+```
+
+Mac/Linux:
+
+```bash
+source ./setup_archlens.sh
 ```
 
 OBS! This might take a while, however less than 5 minuttes.
 This creates a Python 3.10 virtual environment in `./venv` and installs ArchLens. Once it completes, activate the environment:
 
-```bash
+Windows:
+
+```pwsh
 ./.venv/Scripts/activate
+```
+
+Mac/Linux:
+
+```bash
+source ./.venv/bin/activate
 ```
 
 ### Installing ArchLens VS code extension
@@ -106,7 +121,9 @@ Please install the Archlens VS Code Extension by opening the visual studio code 
 ### Checking Compliance
 
 Before you create a PR with your changes, please check if your changes comply with the described architecture / dependency policy, by opening and checking the visualised architecture created by ArchLens.
-To open the visualisation, press `ctrl` + `shift` + `p`, type `ArchLens` and select `ArchLens: Open Graph` (it might take up to 10 seconds before the graph appear).
+To open the visualisation, press `ctrl` + `shift` + `p` (windows) or `ctrl` + `cmd` + `p` (mac), type `ArchLens` and select `ArchLens: Open Graph` (it might take up to 10 seconds before the graph appear).
+
+> If the graph doesn't apprear or there is an error that pops up, then it is probably because your python interpreter is set to be other than 3.10. Try running `ArchLens: Open Setup`, then you should get the option to easily switch python interpreter.
 
 To compare the branch dependencies with `main`, open the ArchLens visualisation window again and check on the `remote` checkbox in the top right corner.
 
@@ -129,7 +146,7 @@ Views control what appears in the generated diagrams. Each view specifies which 
 
 When working on this codebase, please keep the following in mind:
 
-- **Run the tests** before and after your changes: `dotnet test` from `src/c-sharp/`.
+- **Run the tests** before and after your changes: `dotnet test` from the root folder.
 - **Follow existing code conventions**: the project uses primary constructors, file-scoped namespaces, and records where appropriate.
 - **Place new code in the appropriate layer** based on what it does, not where it is convenient to put it. If you are unsure, look at how similar functionality is organised in the existing code.
 
