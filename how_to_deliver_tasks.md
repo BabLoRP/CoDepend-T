@@ -54,7 +54,3 @@ If you ask for help, we might choose not to assist you, as our guidance might bi
 ## Breaks
 
 You manage your own time. If you need to go to the bathroom or similar, you do not need to ask for permission. You may also talk to the other participants, but **not about the tasks or how to complete them**. Your completion time is recorded, so please be mindful of that.
-
----
-
-When you have read through this file, please raise your hand to let us know you are done.
