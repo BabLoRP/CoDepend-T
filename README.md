@@ -118,10 +118,9 @@ source ./.venv/bin/activate
 
 Please install the Archlens VS Code Extension by opening the visual studio code extensions tab, search for `ArchLens` and install the `ArchLens for VS Code`.
 
-### Checking Compliance
+### Viewing visualisations
 
-Before you create a PR with your changes, please check if your changes comply with the described architecture / dependency policy, by opening and checking the visualised architecture created by ArchLens.
-To open the visualisation, press `ctrl` + `shift` + `p` (windows) or `cmd` + `shift` + `p` (mac), type `ArchLens` and select `ArchLens: Open Graph` (it might take up to 10 seconds before the graph appear).
+To see visualised architecture / dependency policy created by ArchLens, open the visualisation, press `ctrl` + `shift` + `p` (windows) or `cmd` + `shift` + `p` (mac), type `ArchLens` and select `ArchLens: Open Graph` (it might take up to 10 seconds before the graph appear).
 
 > If the graph doesn't apprear or there is an error that pops up, then it is probably because your python interpreter is set to be other than 3.10. Try running `ArchLens: Open Setup`, then you should get the option to easily switch python interpreter.
 
