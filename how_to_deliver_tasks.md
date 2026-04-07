@@ -19,7 +19,7 @@ Please read through the whole document before you begin.
    VS Code extensions installed:
    - **C#** (by Microsoft)
    - **C# Dev Kit** (by Microsoft)
-4. Check out your dedicated trunk branch. It is called `<your_email>-trunk` (e.g. `babb-trunk`). This is your personal workspace — you will only create pull requests into this branch, never into `main`.
+4. Check out your dedicated trunk branch. It is called `<your_alias>-trunk` (e.g. `t0-trunk`). This is your personal workspace — you will only create pull requests into this branch, never into `main`.
 
 ## Finding the Tasks
 
@@ -29,8 +29,8 @@ From the repository's root page on GitHub, click **Projects** in the top menu ba
 
 Repeat the following cycle for each task:
 
-1. Make sure you are on your own `TRUNK` branch (it will be named with your email prefixed to `trunk`, e.g. `babb-trunk`).
-2. Create a new branch from `TRUNK`, named with your email prefix and the issue number (e.g. `babb-1`).
+1. Make sure you are on your own `TRUNK` branch (it will be named with your alias prefixed to `trunk`, e.g. `t0-trunk`).
+2. Create a new branch from `TRUNK`, named with your alias prefix and the issue number (e.g. `t0-1`).
 3. Implement the task and all related subtasks. A task is complete when you have fulfilled every acceptance criterion listed in the issue, the code compiles, and all tests pass.
 4. Create a Pull Request to merge your task branch into your `TRUNK` branch. **Do not merge the PR and do not request a review** — simply leave it open.
 5. Switch back to your `TRUNK` branch and start the next task from step 1.
