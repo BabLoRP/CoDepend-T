@@ -14,6 +14,7 @@ public static class DependencyGraphSerializer
         MessagePackSerializerOptions.Standard
             .WithResolver(StandardResolver.Instance)
             .WithCompression(MessagePackCompression.Lz4BlockArray);
+    
 
     [MessagePackObject]
     public sealed class GraphSnapshotDto
@@ -109,7 +110,15 @@ public static class DependencyGraphSerializer
             DependsOn = dependsOn,
         };
 
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        var result = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+
+        var logger = new Infra.Logger();
+        if (result == null || result.Length == 0)
+            logger.LogWarning("Serialization result is empty.");
+        else
+            logger.LogInformation($"Serialization result size: {result.Length} bytes.");
+
+        return result;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
