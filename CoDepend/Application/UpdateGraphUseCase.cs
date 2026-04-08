@@ -6,6 +6,7 @@ using CoDepend.Domain;
 using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 
 namespace CoDepend.Application;
 
@@ -20,9 +21,16 @@ public sealed class UpdateGraphUseCase(
     bool diff = false
     )
 {
+    public Repository repository = new Repository();
+
     public async Task RunAsync(CancellationToken ct = default)
     {
-        var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
+        var snapshotGraph = repository.GetSnapshot();
+        if (snapshotGraph is null)
+        {
+            snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
+        }
+        snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
         var graph = await new DependencyGraphBuilder(parsers, baseOptions).GetGraphAsync(projectChanges, snapshotGraph, ct);
 
