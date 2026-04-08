@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Domain.Utils;
 
 namespace CoDepend.Domain;
 
@@ -89,11 +90,14 @@ public abstract class RendererBase
         }));
     }
 
+
     public async Task SaveViewToFileAsync(string content, View view, RenderOptions options, bool diff = false, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         var dir = options.SaveLocation;
         Directory.CreateDirectory(dir);
+
+        var normalizedFileExtension = PathNormaliser.NormaliseExtension(FileExtension);
 
         var diffString = diff ? "-diff" : "";
         var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}.{FileExtension}";
@@ -101,6 +105,7 @@ public abstract class RendererBase
 
         await File.WriteAllTextAsync(path, content, ct);
     }
+
 
     private static RenderGraph BuildRenderGraph(
         ProjectDependencyGraph graph,

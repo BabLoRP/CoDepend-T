@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using CoDepend.Domain.Utils;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
 
@@ -99,7 +100,7 @@ public class ConfigManager(string _path)
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .ToArray();
 
-        var fileExts = (dto.FileExtensions ?? [".cs"]).Select(NormalizeExtension).ToArray();
+        var fileExts = (dto.FileExtensions ?? [".cs"]).Select(PathNormaliser.NormalizeExtension).ToArray();
         if (fileExts.Length == 0)
             throw new InvalidOperationException("fileExtensions resolved to an empty list.");
 
@@ -154,11 +155,6 @@ public class ConfigManager(string _path)
         return dir.FullName;
     }
 
-    private static string NormalizeExtension(string ext)
-    {
-        ext = ext.Trim();
-        return ext.StartsWith('.') ? ext : "." + ext;
-    }
 
     private static string MapProjectRoot(ConfigDto dto)
     {

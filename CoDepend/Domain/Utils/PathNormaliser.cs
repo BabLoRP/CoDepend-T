@@ -34,4 +34,10 @@ public static class PathNormaliser
             : Path.GetFullPath(relativePath, fullRootPath);
         return fullPath;
     }
+
+    public static string NormalizeExtension(string ext)
+    {
+        ext = ext.Trim();
+        return ext.StartsWith('.') ? ext : "." + ext;
+    }
 }
