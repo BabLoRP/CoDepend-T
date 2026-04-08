@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CoDepend.Infra;
 using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
@@ -100,7 +101,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
             }
         }
         catch (OperationCanceledException) { throw; }
-        catch (Exception ex) { await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}"); }
+        catch (Exception ex) { await Logger.LogErrorAsync($"Error while processing '{item.Value}': {ex}"); }
     }
 
     private async Task<IEnumerable<(RelativePath Parent, RelativePath Item, IReadOnlyList<RelativePath> Deps)>> ParseAllAsync(
@@ -132,7 +133,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}");
+            await Logger.LogErrorAsync($"Error while processing '{item.Value}': {ex}");
             return null;
         }
     }
@@ -146,4 +147,3 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
             graph.RemoveProjectItemRecursive(dir);
     }
 }
-
