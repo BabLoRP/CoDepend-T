@@ -23,12 +23,6 @@ public sealed class ChangeDetector
         Dictionary<RelativePath, HashSet<RelativePath>> ChildrenByDir
     );
 
-    private sealed record ExclusionRule(
-        string[] DirPrefixes,
-        string[] Segments,
-        string[] FileSuffixes
-    );
-
     public static async Task<ProjectChanges> GetProjectChangesAsync(
         ParserOptions parserOptions,
         ProjectDependencyGraph? lastSavedGraph,
