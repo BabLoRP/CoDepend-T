@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using MessagePack;
 using MessagePack.Resolvers;
 
@@ -14,6 +15,8 @@ public static class DependencyGraphSerializer
         MessagePackSerializerOptions.Standard
             .WithResolver(StandardResolver.Instance)
             .WithCompression(MessagePackCompression.Lz4BlockArray);
+
+    private static Logger logger = new Logger();
 
     [MessagePackObject]
     public sealed class GraphSnapshotDto
@@ -108,6 +111,16 @@ public static class DependencyGraphSerializer
             Contains = contains,
             DependsOn = dependsOn,
         };
+
+        byte[] result = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+
+        if (result.Length == 0)
+        {
+            logger.LogWarning(result.Length.ToString());
+        } else
+        {
+            logger.LogInformation(result.Length.ToString());
+        }
 
         return MessagePackSerializer.Serialize(dto, MsgPackOptions);
     }
