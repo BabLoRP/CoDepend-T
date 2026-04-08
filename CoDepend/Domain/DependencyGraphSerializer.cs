@@ -4,6 +4,7 @@ using System.Linq;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
 using MessagePack;
+using CoDepend.Infra;
 using MessagePack.Resolvers;
 
 namespace CoDepend.Domain;
@@ -108,8 +109,9 @@ public static class DependencyGraphSerializer
             Contains = contains,
             DependsOn = dependsOn,
         };
-
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        var arr = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        Logger.LogInformation(arr.Length.ToString());
+        return arr;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)

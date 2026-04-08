@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using CoDepend.Domain;
+using CoDepend.Infra;
 using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
@@ -25,6 +26,8 @@ public sealed class UpdateGraphUseCase(
         var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
         var graph = await new DependencyGraphBuilder(parsers, baseOptions).GetGraphAsync(projectChanges, snapshotGraph, ct);
+
+        Logger.LogInformation(diff ? "Running diff use case" : "Running non-diff use case");
 
         if (renderOptions.Format != RenderFormat.None)
         {
