@@ -16,6 +16,6 @@ public class Logger
 
     public void LogError(string message)
     {
-        Console.WriteLine($"ERROR: {message}");
+        Console.Error.WriteLine($"ERROR: {message}");
     }
 }
