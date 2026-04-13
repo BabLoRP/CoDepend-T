@@ -109,7 +109,18 @@ public static class DependencyGraphSerializer
             DependsOn = dependsOn,
         };
 
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        var result = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+
+        if (result.Length == 0)
+        {
+            Logger.LogWarning("Serialization produced an empty byte array.");
+        }
+        else
+        {
+            Logger.LogInformation($"Serialization produced {result.Length} bytes.");
+        }
+
+        return result;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
