@@ -4,6 +4,7 @@ using CoDepend.Application;
 using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using CoDependTests.Utils;
 
 namespace CoDependTests.Application;
@@ -36,7 +37,7 @@ public sealed class DependencyGraphBuilderTests : IDisposable
         new(changedFilesByDirectory, deletedFiles, deletedDirectories);
 
     private DependencyGraphBuilder CreateBuilder(IReadOnlyList<IDependencyParser> parser) =>
-        new(parser, MakeOptions());
+        new(parser, MakeOptions(), new Logger());
 
     private static ProjectItem RequireItem(ProjectDependencyGraph graph, RelativePath path)
     {

@@ -18,14 +18,14 @@ public sealed class GitSnapshotManager : ISnapshotManager
     private readonly LocalSnapshotManager _localManager;
     private readonly HttpClient _http; // injected for tests
 
-    public GitSnapshotManager(string gitDirName, string gitFileName)
-        : this(gitDirName, gitFileName, handler: null) { }
+    public GitSnapshotManager(string gitDirName, string gitFileName, Logger logger)
+        : this(gitDirName, gitFileName, logger, handler: null) { }
 
-    public GitSnapshotManager(string gitDirName, string gitFileName, HttpMessageHandler handler)
+    public GitSnapshotManager(string gitDirName, string gitFileName, Logger logger, HttpMessageHandler handler)
     {
         _gitDirName = gitDirName;
         _gitFileName = gitFileName;
-        _localManager = new LocalSnapshotManager(gitDirName, gitFileName);
+        _localManager = new LocalSnapshotManager(gitDirName, gitFileName, logger);
         _http = handler is null ? new HttpClient() : new HttpClient(handler, disposeHandler: true);
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("CoDepend-GitSnapshot/1.0");
     }

@@ -2,6 +2,7 @@
 using CoDepend.Domain;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using CoDepend.Infra.SnapshotManagers;
 using CoDependTests.Utils;
 
@@ -27,7 +28,7 @@ public sealed class GitSnapShotManagerTests : IDisposable
     public async Task GetLastSavedDependencyGraphAsync_Throws_When_GitUrl_Missing()
     {
         var handler = new TestHttpHandler();
-        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", handler);
+        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", new Logger(), handler);
 
         var opts = MakeOptions(gitUrl: "  ");
 
@@ -42,7 +43,7 @@ public sealed class GitSnapShotManagerTests : IDisposable
     public async Task GetLastSavedDependencyGraphAsync_Throws_When_GitUrl_Unparsable(string badUrl)
     {
         var handler = new TestHttpHandler();
-        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", handler);
+        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", new Logger(), handler);
 
         var opts = MakeOptions(badUrl);
 
@@ -54,7 +55,7 @@ public sealed class GitSnapShotManagerTests : IDisposable
     public async Task Returns_Graph_From_Main_When_Present()
     {
         var handler = new TestHttpHandler();
-        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", handler);
+        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", new Logger(), handler);
 
         var cleanRoot = _fs.Root.Replace(Path.DirectorySeparatorChar, '/');
         var mainUrl = $"https://raw.githubusercontent.com/owner/repo/refs/heads/main/{cleanRoot}/.CoDepend/snapshot.json";
@@ -73,7 +74,7 @@ public sealed class GitSnapShotManagerTests : IDisposable
     public async Task Throws_When_Both_Branches_Missing()
     {
         var handler = new TestHttpHandler();
-        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", handler);
+        var manager = new GitSnapshotManager(".CoDepend", "snapshot.json", new Logger(), handler);
 
         var mainUrl = "https://raw.githubusercontent.com/owner/repo/main/.CoDepend/snapshot.json";
         var masterUrl = "https://raw.githubusercontent.com/owner/repo/master/.CoDepend/snapshot.json";
