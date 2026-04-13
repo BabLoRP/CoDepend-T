@@ -31,10 +31,12 @@ public sealed class UpdateGraphUseCase(
         {
             if (diff)
             {
+                _logger.LogInformation("Running diff use case");
                 var compareGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct) ?? throw new InvalidOperationException("Diff mode requires a saved snapshot, but none was found.");
                 await renderer.RenderDiffViewsAndSaveToFiles(graph, compareGraph, renderOptions, ct);
             }
             else
+                _logger.LogInformation("Running non-diff use case");
                 await renderer.RenderViewsAndSaveToFiles(graph, renderOptions, ct);
         }
 
