@@ -6,12 +6,13 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using CoDepend.Application;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
 
 namespace CoDepend.Infra;
 
-public class ConfigManager(string _path)
+public class LoadConfigUseCase(string _path)
 {
     private sealed class ConfigDto
     {
@@ -48,8 +49,9 @@ public class ConfigManager(string _path)
         public int? Depth { get; set; }
     }
 
-    private readonly JsonSerializerOptions jsonOptions = new() { PropertyNameCaseInsensitive = true };
-    public async Task<(BaseOptions, ParserOptions, RenderOptions, SnapshotOptions)> LoadAsync(bool diff = false, string format = "puml", CancellationToken ct = default)
+    private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    public async Task<ConfigManager> RunAsync(bool diff = false, string format = "puml", CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(_path))
             throw new ArgumentException("Config path is null/empty.", nameof(_path));
@@ -62,19 +64,18 @@ public class ConfigManager(string _path)
 
         var dto = await JsonSerializer.DeserializeAsync<ConfigDto>(
             fileStream,
-            jsonOptions,
+            _jsonOptions,
             ct
         ) ?? throw new InvalidOperationException($"Could not parse JSON in {configFile}.");
 
         var baseDir = Path.GetDirectoryName(configFile) ?? Environment.CurrentDirectory;
 
         var baseOptions = MapBaseOptions(dto, baseDir);
-
         var parserOptions = MapParserOptions(dto, baseOptions);
         var renderOptions = MapRenderOptions(dto, baseDir, baseOptions, format);
         var snapshotOptions = MapSnapshotOptions(dto, baseOptions, diff);
 
-        return (baseOptions, parserOptions, renderOptions, snapshotOptions);
+        return new ConfigManager(baseOptions, parserOptions, renderOptions, snapshotOptions);
     }
 
     private static BaseOptions MapBaseOptions(ConfigDto dto, string baseDir)
@@ -181,7 +182,6 @@ public class ConfigManager(string _path)
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
     private static IReadOnlyList<Language> MapLanguage(string[] fileExtensions)
 #pragma warning restore CA1859 // Use concrete types when possible for improved performance
-
     {
         List<Language> languages = [];
 
@@ -210,7 +210,6 @@ public class ConfigManager(string _path)
             Branch: dto?.Branch ?? ""
         );
     }
-
 
     private static SnapshotManager MapSnapshotManager(bool diff)
     {
