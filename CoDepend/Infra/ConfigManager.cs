@@ -49,6 +49,24 @@ public class ConfigManager(string _path)
     }
 
     private readonly JsonSerializerOptions jsonOptions = new() { PropertyNameCaseInsensitive = true };
+
+    private BaseOptions? _baseOptions;
+    private ParserOptions? _parserOptions;
+    private RenderOptions? _renderOptions;
+    private SnapshotOptions? _snapshotOptions;
+
+    public BaseOptions GetBaseOptions() =>
+        _baseOptions ?? throw new InvalidOperationException("LoadAsync must be called before accessing options.");
+
+    public ParserOptions GetParserOptions() =>
+        _parserOptions ?? throw new InvalidOperationException("LoadAsync must be called before accessing options.");
+
+    public RenderOptions GetRenderOptions() =>
+        _renderOptions ?? throw new InvalidOperationException("LoadAsync must be called before accessing options.");
+
+    public SnapshotOptions GetSnapshotOptions() =>
+        _snapshotOptions ?? throw new InvalidOperationException("LoadAsync must be called before accessing options.");
+
     public async Task<(BaseOptions, ParserOptions, RenderOptions, SnapshotOptions)> LoadAsync(bool diff = false, string format = "puml", CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(_path))
@@ -68,13 +86,12 @@ public class ConfigManager(string _path)
 
         var baseDir = Path.GetDirectoryName(configFile) ?? Environment.CurrentDirectory;
 
-        var baseOptions = MapBaseOptions(dto, baseDir);
+        _baseOptions = MapBaseOptions(dto, baseDir);
+        _parserOptions = MapParserOptions(dto, _baseOptions);
+        _renderOptions = MapRenderOptions(dto, baseDir, _baseOptions, format);
+        _snapshotOptions = MapSnapshotOptions(dto, _baseOptions, diff);
 
-        var parserOptions = MapParserOptions(dto, baseOptions);
-        var renderOptions = MapRenderOptions(dto, baseDir, baseOptions, format);
-        var snapshotOptions = MapSnapshotOptions(dto, baseOptions, diff);
-
-        return (baseOptions, parserOptions, renderOptions, snapshotOptions);
+        return (_baseOptions, _parserOptions, _renderOptions, _snapshotOptions);
     }
 
     private static BaseOptions MapBaseOptions(ConfigDto dto, string baseDir)
