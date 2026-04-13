@@ -18,7 +18,8 @@ public sealed class UpdateGraphUseCase(
     RendererBase renderer,
     ISnapshotManager snapshotManager,
     ILogger logger,
-    bool diff = false
+    bool diff = false,
+    IRepository? repository = null
     )
 {
     public async Task RunAsync(CancellationToken ct = default)
@@ -28,7 +29,8 @@ public sealed class UpdateGraphUseCase(
         else
             logger.LogInformation("Running non-diff use case");
 
-        var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
+        var snapshotGraph = repository?.GetSnapshot()
+            ?? await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
         var graph = await new DependencyGraphBuilder(parsers, baseOptions, logger).GetGraphAsync(projectChanges, snapshotGraph, ct);
 
