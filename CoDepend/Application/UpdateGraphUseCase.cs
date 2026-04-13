@@ -22,6 +22,8 @@ public sealed class UpdateGraphUseCase(
 {
     public async Task RunAsync(CancellationToken ct = default)
     {
+        Logger.LogInformation(diff ? "Running diff use case" : "Running non-diff use case");
+
         var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
         var graph = await new DependencyGraphBuilder(parsers, baseOptions).GetGraphAsync(projectChanges, snapshotGraph, ct);
