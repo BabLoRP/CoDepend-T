@@ -35,8 +35,7 @@ public class Program
         try
         {
             var resolvedPath = configPath.Length > 0 ? configPath : FindConfigFile("codepend.json");
-            var configManager = new ConfigManager(resolvedPath);
-            await configManager.LoadAsync(diff, format);
+            var configManager = await new LoadConfigUseCase(resolvedPath).RunAsync(diff, format);
 
             var snapshotManager = SnapshotManagerFactory.SelectSnapshotManager(configManager.GetSnapshotOptions());
             var parsers = DependencyParserFactory.SelectDependencyParser(configManager.GetParserOptions());
