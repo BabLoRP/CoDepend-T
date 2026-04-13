@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
-using CoDepend.Infra;
 using MessagePack;
 using MessagePack.Resolvers;
 
-namespace CoDepend.Domain;
+namespace CoDepend.Infra;
 
 public static class DependencyGraphSerializer
 {
