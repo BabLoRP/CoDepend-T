@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Linq;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
 using MessagePack;
 using MessagePack.Resolvers;
+using Microsoft.CodeAnalysis.VisualBasic;
+using CoDepend.Infra;
 
 namespace CoDepend.Domain;
 
@@ -109,7 +112,20 @@ public static class DependencyGraphSerializer
             DependsOn = dependsOn,
         };
 
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        var result = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+
+        // Task 1b: Log the size of the serialization result
+        var logger = new Logger();
+        if (result.Length == 0)
+        {
+            logger.LogWarning("Serialization resulted in empty byte array");
+        }
+        else
+        {
+            logger.LogInformation($"Serialization completed. Size: {result.Length} bytes");
+        }
+
+        return result;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
