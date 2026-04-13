@@ -5,15 +5,11 @@ using System.Threading.Tasks;
 using CoDepend.Domain;
 using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models.Enums;
-using CoDepend.Domain.Models.Records;
 
 namespace CoDepend.Application;
 
 public sealed class UpdateGraphUseCase(
-    BaseOptions baseOptions,
-    ParserOptions parserOptions,
-    RenderOptions renderOptions,
-    SnapshotOptions snapshotOptions,
+    IConfigManager configManager,
     IReadOnlyList<IDependencyParser> parsers,
     RendererBase renderer,
     ISnapshotManager snapshotManager,
@@ -22,6 +18,11 @@ public sealed class UpdateGraphUseCase(
 {
     public async Task RunAsync(CancellationToken ct = default)
     {
+        var baseOptions = configManager.GetBaseOptions();
+        var parserOptions = configManager.GetParserOptions();
+        var renderOptions = configManager.GetRenderOptions();
+        var snapshotOptions = configManager.GetSnapshotOptions();
+
         var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
         var graph = await new DependencyGraphBuilder(parsers, baseOptions).GetGraphAsync(projectChanges, snapshotGraph, ct);

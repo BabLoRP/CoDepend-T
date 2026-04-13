@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using CoDepend.Application;
-using CoDepend.Domain.Models.Records;
 using CoDepend.Infra;
 using CoDepend.Infra.Factories;
 
@@ -16,7 +15,7 @@ public class Program
     {
         var relPath = args.Length == 0 ? "../codepend.json" : args[0].Trim();
 
-        var fileAbsPath = File.Exists(relPath) 
+        var fileAbsPath = File.Exists(relPath)
                         ? new FileInfo(relPath).FullName
                         : "";
 
@@ -35,16 +34,18 @@ public class Program
     {
         try
         {
-            var (baseOptions, parserOptions, renderOptions, snapshotOptions) = await LoadOptions(configPath, diff, format);
+            var resolvedPath = configPath.Length > 0 ? configPath : FindConfigFile("codepend.json");
+            var configManager = new ConfigManager(resolvedPath);
+            await configManager.LoadAsync(diff, format);
 
-            var snapshotManager = SnapshotManagerFactory.SelectSnapshotManager(snapshotOptions);
-            var parsers = DependencyParserFactory.SelectDependencyParser(parserOptions);
-            var renderer = RendererFactory.SelectRenderer(renderOptions);
+            var snapshotManager = SnapshotManagerFactory.SelectSnapshotManager(configManager.GetSnapshotOptions());
+            var parsers = DependencyParserFactory.SelectDependencyParser(configManager.GetParserOptions());
+            var renderer = RendererFactory.SelectRenderer(configManager.GetRenderOptions());
 
-            var useCase = new UpdateGraphUseCase(baseOptions, parserOptions, renderOptions, snapshotOptions, parsers, renderer, snapshotManager, diff);
+            var useCase = new UpdateGraphUseCase(configManager, parsers, renderer, snapshotManager, diff);
             await useCase.RunAsync();
 
-            Console.WriteLine($"Success! Diagrams available in: {renderOptions.SaveLocation}");
+            Console.WriteLine($"Success! Diagrams available in: {configManager.GetRenderOptions().SaveLocation}");
             return "";
         }
         catch (Exception e)
@@ -52,13 +53,6 @@ public class Program
             Console.WriteLine($"EXCEPTION: {e.Message}\n{e.StackTrace}");
             return $"EXCEPTION: {e.Message}\n{e.StackTrace}";
         }
-    }
-
-    private static async Task<(BaseOptions, ParserOptions, RenderOptions, SnapshotOptions)> LoadOptions(string configDir, bool diff = false, string format = "puml")
-    {
-        var resolvedPath = configDir.Length > 0 ? configDir : FindConfigFile("codepend.json");
-        var configManager = new ConfigManager(resolvedPath);
-        return await configManager.LoadAsync(diff, format);
     }
 
     private static string FindConfigFile(string fileName)
