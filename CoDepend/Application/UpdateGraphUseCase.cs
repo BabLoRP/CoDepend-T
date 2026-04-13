@@ -6,10 +6,12 @@ using CoDepend.Domain;
 using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 
 namespace CoDepend.Application;
 
 public sealed class UpdateGraphUseCase(
+
     BaseOptions baseOptions,
     ParserOptions parserOptions,
     RenderOptions renderOptions,
@@ -20,6 +22,7 @@ public sealed class UpdateGraphUseCase(
     bool diff = false
     )
 {
+    private readonly Logger _logger = new Logger();
     public async Task RunAsync(CancellationToken ct = default)
     {
         var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
@@ -29,11 +32,13 @@ public sealed class UpdateGraphUseCase(
         if (renderOptions.Format != RenderFormat.None)
         {
             if (diff)
-            {
+            {   
+                _logger.LogInformation("Running diff use case");
                 var compareGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct) ?? throw new InvalidOperationException("Diff mode requires a saved snapshot, but none was found.");
                 await renderer.RenderDiffViewsAndSaveToFiles(graph, compareGraph, renderOptions, ct);
             }
             else
+                _logger.LogInformation("Running non-diff use case");
                 await renderer.RenderViewsAndSaveToFiles(graph, renderOptions, ct);
         }
 
