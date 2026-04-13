@@ -1,6 +1,7 @@
 using CoDepend.Domain;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using CoDepend.Infra.SnapshotManagers;
 using CoDependTests.Utils;
 
@@ -28,7 +29,7 @@ public sealed class LocalSnapshotManagerTests : IDisposable
     {
         var dirName = ".CoDepend";
         var fileName = "snapshot.json";
-        var snapshotManager = new LocalSnapshotManager(dirName, fileName);
+        var snapshotManager = new LocalSnapshotManager(dirName, fileName, new Logger());
 
         var opts = MakeOptions();
 
@@ -74,7 +75,7 @@ public sealed class LocalSnapshotManagerTests : IDisposable
     [Fact]
     public async Task SaveThenLoad_Get_Name_And_LastWriteTime()
     {
-        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json");
+        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json", new Logger());
         var opts = MakeOptions();
 
         var rootPath = _fs.Root;
@@ -116,7 +117,7 @@ public sealed class LocalSnapshotManagerTests : IDisposable
     [Fact]
     public async Task GetLastSavedDependencyGraphAsync_ReturnsNull_WhenFileMissing()
     {
-        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json");
+        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json", new Logger());
         var opts = MakeOptions();
 
         var loaded = await snapshotManager.GetLastSavedDependencyGraphAsync(opts);
@@ -130,7 +131,7 @@ public sealed class LocalSnapshotManagerTests : IDisposable
         var customDir = "_state";
         var customFile = "dep.json";
 
-        var snapshotManager = new LocalSnapshotManager(customDir, customFile);
+        var snapshotManager = new LocalSnapshotManager(customDir, customFile, new Logger());
         var opts = MakeOptions();
 
         var graph = new ProjectDependencyGraph(_fs.Root);
@@ -144,7 +145,7 @@ public sealed class LocalSnapshotManagerTests : IDisposable
     [Fact]
     public async Task Load_ReturnsGraph_WhenFilePresent()
     {
-        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json");
+        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json", new Logger());
         var opts = MakeOptions();
 
         var graph = TestDependencyGraph.MakeDependencyGraph(_fs.Root);
@@ -158,7 +159,7 @@ public sealed class LocalSnapshotManagerTests : IDisposable
     [Fact]
     public async Task Load_ReturnsMultiLevelGraph_WhenPresent()
     {
-        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json");
+        var snapshotManager = new LocalSnapshotManager(".CoDepend", "snapshot.json", new Logger());
         var opts = MakeOptions();
 
         var root = _fs.Root;

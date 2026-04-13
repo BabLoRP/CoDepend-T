@@ -37,11 +37,12 @@ public class Program
         {
             var (baseOptions, parserOptions, renderOptions, snapshotOptions) = await LoadOptions(configPath, diff, format);
 
-            var snapshotManager = SnapshotManagerFactory.SelectSnapshotManager(snapshotOptions);
+            var logger = new Logger();
+            var snapshotManager = SnapshotManagerFactory.SelectSnapshotManager(snapshotOptions, logger);
             var parsers = DependencyParserFactory.SelectDependencyParser(parserOptions);
             var renderer = RendererFactory.SelectRenderer(renderOptions);
 
-            var useCase = new UpdateGraphUseCase(baseOptions, parserOptions, renderOptions, snapshotOptions, parsers, renderer, snapshotManager, diff);
+            var useCase = new UpdateGraphUseCase(baseOptions, parserOptions, renderOptions, snapshotOptions, parsers, renderer, snapshotManager, logger, diff);
             await useCase.RunAsync();
 
             Console.WriteLine($"Success! Diagrams available in: {renderOptions.SaveLocation}");

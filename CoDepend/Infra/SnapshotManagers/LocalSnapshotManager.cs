@@ -8,7 +8,7 @@ using CoDepend.Domain.Models.Records;
 
 namespace CoDepend.Infra.SnapshotManagers;
 
-public sealed class LocalSnapshotManager(string _localDirName, string _localFileName) : ISnapshotManager
+public sealed class LocalSnapshotManager(string _localDirName, string _localFileName, Logger _logger) : ISnapshotManager
 {
     public async Task SaveGraphAsync(ProjectDependencyGraph graph, SnapshotOptions options, CancellationToken ct = default)
     {
@@ -21,6 +21,10 @@ public sealed class LocalSnapshotManager(string _localDirName, string _localFile
         var path = Path.Combine(dir, _localFileName);
 
         var bytes = DependencyGraphSerializer.Serialize(graph);
+        if (bytes.Length == 0)
+            _logger.LogWarning("Serialized byte[] is empty.");
+        else
+            _logger.LogInformation($"Serialized byte[] size: {bytes.Length}");
         await File.WriteAllBytesAsync(path, bytes, ct);
     }
 
