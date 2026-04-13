@@ -26,14 +26,14 @@ Program.cs → Infra → Application → Domain
 ```
 
 - **Domain** (`CoDepend/Domain/`): core models, interfaces (`IDependencyParser`, `ISnapshotManager`), `DependencyGraphSerializer` (MessagePack binary serialization), `RendererBase`.
-- **Application** (`CoDepend/Application/`): `UpdateGraphUseCase` (main orchestrator), `DependencyGraphBuilder` (parallel parse → graph), `ChangeDetector` (diff since last snapshot), `ILogger`.
-- **Infra** (`CoDepend/Infra/`): `Logger`, language parsers (C#/Java/Kotlin/Go), renderers (PlantUML/JSON/None), snapshot managers (Local/Git), factories that wire them up from config.
-- **Program.cs**: CLI entry point; instantiates `Logger`, calls factories, builds and runs `UpdateGraphUseCase`.
+- **Application** (`CoDepend/Application/`): `UpdateGraphUseCase` (main orchestrator), `DependencyGraphBuilder` (parallel parse → graph), `ChangeDetector` (diff since last snapshot), `ILogger`, `ConfigManager` (data holder for the four options structs).
+- **Infra** (`CoDepend/Infra/`): `Logger`, `LoadConfigUseCase` (reads `codepend.json` and constructs `ConfigManager`), language parsers (C#/Java/Kotlin/Go), renderers (PlantUML/JSON/None), snapshot managers (Local/Git), factories that wire them up from config.
+- **Program.cs**: CLI entry point; runs `LoadConfigUseCase`, instantiates `Logger`, calls factories with options from `ConfigManager`, builds and runs `UpdateGraphUseCase`.
 
 ### Key data flow
 
-1. `ConfigManager` loads `codepend.json` → options structs (`BaseOptions`, `ParserOptions`, `RenderOptions`, `SnapshotOptions`).
-2. `SnapshotManagerFactory`, `DependencyParserFactory`, `RendererFactory` select implementations from options.
+1. `LoadConfigUseCase.RunAsync()` reads `codepend.json` and returns a `ConfigManager` holding the four options structs (`BaseOptions`, `ParserOptions`, `RenderOptions`, `SnapshotOptions`).
+2. `SnapshotManagerFactory`, `DependencyParserFactory`, `RendererFactory` select implementations from options queried via `ConfigManager.Get*Options()`.
 3. `UpdateGraphUseCase.RunAsync()` orchestrates: load last snapshot → detect changes → build graph → render → save snapshot.
 4. `DependencyGraphBuilder` processes file changes in parallel using all registered parsers.
 5. Snapshot is serialized with MessagePack + Lz4 compression via `DependencyGraphSerializer`.

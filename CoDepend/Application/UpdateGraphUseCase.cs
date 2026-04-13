@@ -5,15 +5,11 @@ using System.Threading.Tasks;
 using CoDepend.Domain;
 using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models.Enums;
-using CoDepend.Domain.Models.Records;
 
 namespace CoDepend.Application;
 
 public sealed class UpdateGraphUseCase(
-    BaseOptions baseOptions,
-    ParserOptions parserOptions,
-    RenderOptions renderOptions,
-    SnapshotOptions snapshotOptions,
+    ConfigManager configManager,
     IReadOnlyList<IDependencyParser> parsers,
     RendererBase renderer,
     ISnapshotManager snapshotManager,
@@ -28,6 +24,11 @@ public sealed class UpdateGraphUseCase(
             logger.LogInformation("Running diff use case");
         else
             logger.LogInformation("Running non-diff use case");
+
+        var baseOptions = configManager.GetBaseOptions();
+        var parserOptions = configManager.GetParserOptions();
+        var renderOptions = configManager.GetRenderOptions();
+        var snapshotOptions = configManager.GetSnapshotOptions();
 
         var snapshotGraph = repository?.GetSnapshot()
             ?? await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
