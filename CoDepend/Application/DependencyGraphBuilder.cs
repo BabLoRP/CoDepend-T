@@ -72,7 +72,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
         return fileItems;
     }
 
-    private async Task TryClassifyItem(
+    private Task TryClassifyItem(
         RelativePath item,
         RelativePath parent,
         RelativePath root,
@@ -85,7 +85,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
             ct.ThrowIfCancellationRequested();
 
             if (string.IsNullOrWhiteSpace(item.Value) || item.Value.Trim() == root.Value)
-                return;
+                return Task.CompletedTask;
 
             var absPath = PathNormaliser.GetAbsolutePath(_options.FullRootPath, item.Value);
 
@@ -100,7 +100,9 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
             }
         }
         catch (OperationCanceledException) { throw; }
-        catch (Exception ex) { await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}"); }
+        catch (Exception ex) { Logger.LogError($"Error while processing '{item.Value}': {ex}"); }
+
+        return Task.CompletedTask;
     }
 
     private async Task<IEnumerable<(RelativePath Parent, RelativePath Item, IReadOnlyList<RelativePath> Deps)>> ParseAllAsync(
@@ -132,7 +134,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}");
+            Logger.LogError($"Error while processing '{item.Value}': {ex}");
             return null;
         }
     }
