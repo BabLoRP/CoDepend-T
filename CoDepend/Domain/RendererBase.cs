@@ -96,7 +96,9 @@ public abstract class RendererBase
         Directory.CreateDirectory(dir);
 
         var diffString = diff ? "-diff" : "";
-        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}.{FileExtension}";
+        var ext = FileExtension.Trim();
+        var normalizedExt = ext.Length == 0 ? "" : (ext.StartsWith('.') ? ext : "." + ext);
+        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}{normalizedExt}";
         var path = Path.Combine(dir, filename);
 
         await File.WriteAllTextAsync(path, content, ct);
