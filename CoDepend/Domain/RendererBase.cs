@@ -49,6 +49,9 @@ public abstract class RendererBase
 {
     public abstract string FileExtension { get; }
 
+    // Normalized file extension with proper dot handling
+    private string NormalizedFileExtension => NormalizeExtension(FileExtension);
+
     protected abstract string Render(RenderGraph graph, View view, RenderOptions options);
 
     public string RenderView(ProjectDependencyGraph graph, View view, RenderOptions options)
@@ -96,10 +99,16 @@ public abstract class RendererBase
         Directory.CreateDirectory(dir);
 
         var diffString = diff ? "-diff" : "";
-        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}.{FileExtension}";
+        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}{NormalizedFileExtension}";
         var path = Path.Combine(dir, filename);
 
         await File.WriteAllTextAsync(path, content, ct);
+    }
+
+    private static string NormalizeExtension(string ext)
+    {
+        ext = ext.Trim();
+        return ext.StartsWith('.') ? ext : "." + ext;
     }
 
     private static RenderGraph BuildRenderGraph(
