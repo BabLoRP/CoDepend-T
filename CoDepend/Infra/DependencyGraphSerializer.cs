@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CoDepend.Application;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
 using MessagePack;
@@ -10,6 +11,9 @@ namespace CoDepend.Infra;
 
 public static class DependencyGraphSerializer
 {
+
+    private static readonly ILogger _logger = new Logger();
+
     private static readonly MessagePackSerializerOptions MsgPackOptions =
         MessagePackSerializerOptions.Standard
             .WithResolver(StandardResolver.Instance)
@@ -113,10 +117,10 @@ public static class DependencyGraphSerializer
 
         if (result.Length == 0)
         {
-            Logger.LogWarning("Serialised dependency graph is empty.");
+            _logger.LogWarning("Serialised dependency graph is empty.");
         } else
         {
-            Logger.LogInformation($"Serialised dependency graph with {items.Count} items.");
+            _logger.LogInformation($"Serialised dependency graph with {result.Length} items.");
         }
 
         return result;
