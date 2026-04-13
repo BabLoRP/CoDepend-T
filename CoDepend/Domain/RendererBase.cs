@@ -49,6 +49,15 @@ public abstract class RendererBase
 {
     public abstract string FileExtension { get; }
 
+    private string NormalizedFileExtension
+    {
+        get
+        {
+            var ext = FileExtension.Trim();
+            return ext.StartsWith('.') ? ext : "." + ext;
+        }
+    }
+
     protected abstract string Render(RenderGraph graph, View view, RenderOptions options);
 
     public string RenderView(ProjectDependencyGraph graph, View view, RenderOptions options)
@@ -96,7 +105,7 @@ public abstract class RendererBase
         Directory.CreateDirectory(dir);
 
         var diffString = diff ? "-diff" : "";
-        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}.{FileExtension}";
+        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}{NormalizedFileExtension}";
         var path = Path.Combine(dir, filename);
 
         await File.WriteAllTextAsync(path, content, ct);
