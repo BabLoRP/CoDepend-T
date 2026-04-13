@@ -38,6 +38,8 @@ public sealed record RenderEdge(
     IReadOnlyList<RenderRelation> Relations
 );
 
+
+
 public sealed record RenderGraph(
     IReadOnlyDictionary<RelativePath, RenderNode> Nodes,
     IReadOnlyDictionary<RelativePath, IReadOnlyList<RelativePath>> ChildrenByParent,
@@ -48,6 +50,12 @@ public sealed record RenderGraph(
 public abstract class RendererBase
 {
     public abstract string FileExtension { get; }
+
+    private static string NormalizeExtension(string ext)
+    {
+    ext = ext.Trim();
+    return ext.StartsWith('.') ? ext : "." + ext;
+    }
 
     protected abstract string Render(RenderGraph graph, View view, RenderOptions options);
 
@@ -96,7 +104,8 @@ public abstract class RendererBase
         Directory.CreateDirectory(dir);
 
         var diffString = diff ? "-diff" : "";
-        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}.{FileExtension}";
+        var normalizedExtension = NormalizeExtension(FileExtension);
+        var filename = $"{options.BaseOptions.ProjectName}{diffString}-{view.ViewName}{normalizedExtension}";
         var path = Path.Combine(dir, filename);
 
         await File.WriteAllTextAsync(path, content, ct);
