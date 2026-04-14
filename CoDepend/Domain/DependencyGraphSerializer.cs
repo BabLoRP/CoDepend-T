@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using MessagePack;
 using MessagePack.Resolvers;
 
@@ -109,7 +110,18 @@ public static class DependencyGraphSerializer
             DependsOn = dependsOn,
         };
 
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        var logger = new Logger();
+
+        var bArr = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+
+        if(bArr.Any())
+        {
+            logger.LogInformation(bArr.Length.ToString());
+        }else
+        {
+            logger.LogWarning(bArr.Length.ToString());
+        }
+        return bArr;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
