@@ -17,12 +17,14 @@ public sealed class UpdateGraphUseCase(
     IReadOnlyList<IDependencyParser> parsers,
     RendererBase renderer,
     ISnapshotManager snapshotManager,
+    IRepository? repository = null,
     bool diff = false
     )
 {
     public async Task RunAsync(CancellationToken ct = default)
     {
-        var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
+        var snapshotGraph = repository?.GetSnapshot();
+        snapshotGraph ??= await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
         var graph = await new DependencyGraphBuilder(parsers, baseOptions).GetGraphAsync(projectChanges, snapshotGraph, ct);
 
