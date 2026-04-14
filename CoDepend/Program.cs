@@ -2,9 +2,12 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using CoDepend.Application;
+using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models.Records;
 using CoDepend.Infra;
 using CoDepend.Infra.Factories;
+using Microsoft.Extensions.DependencyInjection;
+
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace CoDepend.CLI;
@@ -16,7 +19,7 @@ public class Program
     {
         var relPath = args.Length == 0 ? "../codepend.json" : args[0].Trim();
 
-        var fileAbsPath = File.Exists(relPath) 
+        var fileAbsPath = File.Exists(relPath)
                         ? new FileInfo(relPath).FullName
                         : "";
 
@@ -35,13 +38,35 @@ public class Program
     {
         try
         {
-            var (baseOptions, parserOptions, renderOptions, snapshotOptions) = await LoadOptions(configPath, diff, format);
+            var services = new ServiceCollection();
 
+        var (baseOptions, parserOptions, renderOptions, snapshotOptions) =
+            await LoadOptions(configPath, diff, format);
+
+            // register options
+            services.AddSingleton(baseOptions);
+            services.AddSingleton(parserOptions);
+            services.AddSingleton(renderOptions);
+            services.AddSingleton(snapshotOptions);
+
+            // factories (replace later with proper DI services if you want)
             var snapshotManager = SnapshotManagerFactory.SelectSnapshotManager(snapshotOptions);
             var parsers = DependencyParserFactory.SelectDependencyParser(parserOptions);
             var renderer = RendererFactory.SelectRenderer(renderOptions);
 
-            var useCase = new UpdateGraphUseCase(baseOptions, parserOptions, renderOptions, snapshotOptions, parsers, renderer, snapshotManager, diff);
+            services.AddSingleton(snapshotManager);
+            services.AddSingleton(parsers);
+            services.AddSingleton(renderer);
+
+            // DI of logger
+            services.AddSingleton<ILogger, Logger>();
+
+            // application layer
+            services.AddSingleton<UpdateGraphUseCase>();
+
+            var provider = services.BuildServiceProvider();
+
+            var useCase = provider.GetRequiredService<UpdateGraphUseCase>();
             await useCase.RunAsync();
 
             Console.WriteLine($"Success! Diagrams available in: {renderOptions.SaveLocation}");

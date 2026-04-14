@@ -122,7 +122,7 @@ public class PerformanceTests
             }
 
             Changes = new ProjectChanges(changedByDir, [], []);
-            Builder = new DependencyGraphBuilder([new NullParser()], opts);
+            Builder = new DependencyGraphBuilder([new NullParser()],opts,new NullLogger());
         }
 
         public void Dispose()

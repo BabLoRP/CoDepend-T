@@ -7,6 +7,7 @@ using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
 
+
 namespace CoDepend.Application;
 
 public sealed class UpdateGraphUseCase(
@@ -17,6 +18,8 @@ public sealed class UpdateGraphUseCase(
     IReadOnlyList<IDependencyParser> parsers,
     RendererBase renderer,
     ISnapshotManager snapshotManager,
+    ILogger logger,
+    DependencyGraphBuilder graphBuilder,
     bool diff = false
     )
 {
@@ -24,17 +27,21 @@ public sealed class UpdateGraphUseCase(
     {
         var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
-        var graph = await new DependencyGraphBuilder(parsers, baseOptions).GetGraphAsync(projectChanges, snapshotGraph, ct);
+        var graph = await graphBuilder.GetGraphAsync(projectChanges, snapshotGraph, ct);
 
         if (renderOptions.Format != RenderFormat.None)
         {
             if (diff)
             {
+                logger.LogInformation("Running diff use case");
                 var compareGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct) ?? throw new InvalidOperationException("Diff mode requires a saved snapshot, but none was found.");
                 await renderer.RenderDiffViewsAndSaveToFiles(graph, compareGraph, renderOptions, ct);
             }
             else
+            {
+                logger.LogInformation("Running non-diff use case");
                 await renderer.RenderViewsAndSaveToFiles(graph, renderOptions, ct);
+            }
         }
 
         await snapshotManager.SaveGraphAsync(graph, snapshotOptions, ct);

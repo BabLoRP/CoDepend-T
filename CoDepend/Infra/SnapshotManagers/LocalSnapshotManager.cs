@@ -20,7 +20,7 @@ public sealed class LocalSnapshotManager(string _localDirName, string _localFile
         Directory.CreateDirectory(dir);
         var path = Path.Combine(dir, _localFileName);
 
-        var bytes = DependencyGraphSerializer.Serialize(graph);
+        var bytes = new DependencyGraphSerializer(new Logger()).Serialize(graph);
         await File.WriteAllBytesAsync(path, bytes, ct);
     }
 

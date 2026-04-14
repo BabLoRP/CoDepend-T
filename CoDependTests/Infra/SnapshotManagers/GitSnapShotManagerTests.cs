@@ -2,6 +2,7 @@
 using CoDepend.Domain;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using CoDepend.Infra.SnapshotManagers;
 using CoDependTests.Utils;
 
@@ -60,7 +61,7 @@ public sealed class GitSnapShotManagerTests : IDisposable
         var mainUrl = $"https://raw.githubusercontent.com/owner/repo/refs/heads/main/{cleanRoot}/.CoDepend/snapshot.json";
 
         var graph = TestDependencyGraph.MakeDependencyGraph(_fs.Root);
-        handler.When(mainUrl, HttpStatusCode.OK, DependencyGraphSerializer.Serialize(graph), "application/octet-stream");
+        handler.When(mainUrl, HttpStatusCode.OK, new DependencyGraphSerializer(new Logger()).Serialize(graph), "application/octet-stream");
 
         var opts = MakeOptions("https://github.com/owner/repo");
 
