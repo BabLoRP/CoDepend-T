@@ -1,6 +1,7 @@
 using CoDepend.Domain;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using CoDepend.Infra.SnapshotManagers;
 using CoDependTests.Utils;
 
@@ -26,6 +27,7 @@ public sealed class LocalSnapshotManagerTests : IDisposable
     [Fact]
     public async Task SaveGraphAsync_CreatesDirectoryAndFile_AtConfiguredLocation()
     {
+        Logger _logger = new();
         var dirName = ".CoDepend";
         var fileName = "snapshot.json";
         var snapshotManager = new LocalSnapshotManager(dirName, fileName);

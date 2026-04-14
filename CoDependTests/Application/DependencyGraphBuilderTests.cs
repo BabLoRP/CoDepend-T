@@ -35,8 +35,16 @@ public sealed class DependencyGraphBuilderTests : IDisposable
                                                 IReadOnlyList<RelativePath> deletedDirectories) =>
         new(changedFilesByDirectory, deletedFiles, deletedDirectories);
 
-    private DependencyGraphBuilder CreateBuilder(IReadOnlyList<IDependencyParser> parser) =>
-        new(parser, MakeOptions());
+    private DependencyGraphBuilder CreateBuilder(IReadOnlyList<IDependencyParser> parser)
+{
+    var logger = new TestLogger();
+
+    return new DependencyGraphBuilder(
+        parser,
+        MakeOptions(),
+        logger
+    );
+}
 
     private static ProjectItem RequireItem(ProjectDependencyGraph graph, RelativePath path)
     {

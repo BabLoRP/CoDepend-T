@@ -3,13 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Domain.Interfaces;
 using MessagePack;
 using MessagePack.Resolvers;
 
 namespace CoDepend.Domain;
 
-public static class DependencyGraphSerializer
+public sealed class DependencyGraphSerializer
 {
+    private readonly ILogger _logger;
+
+    public DependencyGraphSerializer(ILogger logger)
+    {
+        _logger = logger;
+    }
+
     private static readonly MessagePackSerializerOptions MsgPackOptions =
         MessagePackSerializerOptions.Standard
             .WithResolver(StandardResolver.Instance)
@@ -55,7 +63,7 @@ public static class DependencyGraphSerializer
         [Key(2)] public int Type { get; set; }
     }
 
-    public static byte[] Serialize(ProjectDependencyGraph graph, int version = 1)
+    public byte[] Serialize(ProjectDependencyGraph graph, int version = 1)
     {
         ArgumentNullException.ThrowIfNull(graph);
 
@@ -109,7 +117,18 @@ public static class DependencyGraphSerializer
             DependsOn = dependsOn,
         };
 
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        var data = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+
+        if (data is null || data.Length == 0) {
+            _logger.LogWarning("0");
+            return null;
+        }
+        else
+        {
+            _logger.LogInformation(data.Length.ToString());   
+        }
+
+        return data;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
