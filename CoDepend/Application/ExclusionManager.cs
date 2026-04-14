@@ -108,7 +108,7 @@ public class ExclusionManager
         return null;
     }
 
-        private static string GetRelative(string root, string path)
+    private static string GetRelative(string root, string path)
     {
         var rel = Path.GetRelativePath(root, path);
         return rel.Replace('\\', '/');
