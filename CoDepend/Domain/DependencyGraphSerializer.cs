@@ -5,6 +5,7 @@ using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
 using MessagePack;
 using MessagePack.Resolvers;
+using CoDepend.Infra;
 
 namespace CoDepend.Domain;
 
@@ -109,7 +110,12 @@ public static class DependencyGraphSerializer
             DependsOn = dependsOn,
         };
 
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        byte[] bytes = MessagePackSerializer.Serialize(dto, MsgPackOptions);
+
+        if (bytes.Length == 0) { Logger.LogWarning("byte[] is empty"); } 
+        else { Logger.LogInformation($"Length of byte[] is {bytes.Length}"); }
+
+        return bytes;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
