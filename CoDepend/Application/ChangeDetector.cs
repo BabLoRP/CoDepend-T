@@ -23,12 +23,6 @@ public sealed class ChangeDetector
         Dictionary<RelativePath, HashSet<RelativePath>> ChildrenByDir
     );
 
-    private sealed record ExclusionRule(
-        string[] DirPrefixes,
-        string[] Segments,
-        string[] FileSuffixes
-    );
-
     public static async Task<ProjectChanges> GetProjectChangesAsync(
         ParserOptions parserOptions,
         ProjectDependencyGraph? lastSavedGraph,
@@ -38,7 +32,7 @@ public sealed class ChangeDetector
             ? Path.GetFullPath(parserOptions.BaseOptions.ProjectRoot)
             : parserOptions.BaseOptions.FullRootPath;
 
-        var rules = CompileExclusions(parserOptions.Exclusions);
+        var rules = ExclusionManager.CompileExclusions(parserOptions.Exclusions);
 
         var current = await Task.Run(
             () => ScanCurrentProjectFileStructure(projectRoot, parserOptions.FileExtensions, rules, ct),
@@ -210,62 +204,10 @@ public sealed class ChangeDetector
         return RelativePath.Directory(projectRoot, parentSlice);
     }
 
-    private static ExclusionRule CompileExclusions(IReadOnlyList<string> exclusions)
-    {
-        List<string> dirPrefixes = [];
-        List<string> segments = [];
-        List<string> suffixes = [];
-
-        foreach (var entry in exclusions)
-        {
-            var norm = NormaliseExclusionEntry(entry);
-            if (norm is null) continue;
-
-            if (ToDirPrefix(norm) is { } prefix) { dirPrefixes.Add(prefix); continue; }
-            if (norm.StartsWith("*.", StringComparison.Ordinal)) { suffixes.Add(norm[1..]); continue; }
-            segments.Add(norm);
-        }
-
-        return new ExclusionRule(
-            DirPrefixes: [.. dirPrefixes],
-            Segments: [.. segments],
-            FileSuffixes: [.. suffixes]
-        );
-    }
-
-    // Returns null for blank/empty entries; otherwise strips **/  prefix, normalises slashes, and trims trailing dot.
-    private static string? NormaliseExclusionEntry(string? entry)
-    {
-        var exclusion = (entry ?? string.Empty).Trim();
-        if (exclusion.Length == 0) return null;
-
-        if (exclusion.StartsWith("**/", StringComparison.Ordinal)) exclusion = exclusion[3..];
-
-        var norm = exclusion.Replace('\\', '/');
-        return norm.EndsWith('.') ? norm[..^1] : norm;
-    }
-
-    // Returns the canonical dir-prefix form when norm represents a directory pattern, otherwise null.
-    private static string? ToDirPrefix(string norm)
-    {
-        // relative path with trailing '/' -> dir
-        if (norm.EndsWith('/'))
-        {
-            var p = norm.StartsWith("./", StringComparison.Ordinal) ? norm[2..] : norm;
-            return p.EndsWith('/') ? p : p + "/";
-        }
-
-        // relative path containing '/' but no trailing slash -> dir
-        if (norm.Contains('/'))
-            return norm + "/";
-
-        return null;
-    }
-
     private static ProjectFileStructure ScanCurrentProjectFileStructure(
         string projectRoot,
         IReadOnlyList<string> extensions,
-        ExclusionRule rules,
+        ExclusionManager.ExclusionRule rules,
         CancellationToken ct)
     {
         var extensionSet = new HashSet<string>(extensions, StringComparer.OrdinalIgnoreCase);
@@ -297,7 +239,7 @@ public sealed class ChangeDetector
             foreach (var fileAbs in fileAbsList)
             {
                 ct.ThrowIfCancellationRequested();
-                if (IsExcluded(projectRoot, fileAbs, rules)) continue;
+                if (ExclusionManager.IsExcluded(projectRoot, fileAbs, rules)) continue;
                 if (!extensionSet.Contains(Path.GetExtension(fileAbs))) continue;
 
                 var fileRel = RelativePath.File(projectRoot, fileAbs);
@@ -306,7 +248,7 @@ public sealed class ChangeDetector
             }
 
             var includedSubdirs = subdirs
-                .Where(s => !IsExcluded(projectRoot, s, rules))
+                .Where(s => !ExclusionManager.IsExcluded(projectRoot, s, rules))
                 .ToArray();
 
             foreach (var subAbs in includedSubdirs)
@@ -338,7 +280,7 @@ public sealed class ChangeDetector
         IReadOnlySet<RelativePath> currentDirs,
 #pragma warning restore CA1859 // Use concrete types when possible for improved performance
 
-        ExclusionRule rules,
+        ExclusionManager.ExclusionRule rules,
         CancellationToken ct)
     {
         List<RelativePath> deletedFiles = [];
@@ -355,7 +297,7 @@ public sealed class ChangeDetector
                 continue;
 
             var absPath = PathNormaliser.GetAbsolutePath(projectRoot, item.Path.Value);
-            if (IsExcluded(projectRoot, absPath, rules))
+            if (ExclusionManager.IsExcluded(projectRoot, absPath, rules))
                 continue;
 
             var isFile = item.Type == ProjectItemType.File;
@@ -401,50 +343,7 @@ public sealed class ChangeDetector
         );
     }
 
-    private static bool IsExcluded(string projectRoot, string content, ExclusionRule rules)
-    {
-        var path = GetRelative(projectRoot, content);
-        var pathSeparater = '/';
-        var pathWithSlash = path + pathSeparater;
-        var pathWithBothSlashes = pathSeparater + path + pathSeparater;
-
-        // Do not change to linq - this is called on every file in a project and linq would allocate too much space on large systems
-        foreach (var rule in rules.DirPrefixes)
-        {
-            if (pathWithSlash.StartsWith(rule, StringComparison.OrdinalIgnoreCase)
-                || pathWithBothSlashes.Contains(pathSeparater + rule, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        var segments = path.Split(pathSeparater, StringSplitOptions.RemoveEmptyEntries);
-        // Do not change to linq - this is called on every file in a project and linq would allocate too much space on large systems
-        foreach (var segment in segments)
-        {
-            foreach (var ban in rules.Segments)
-            {
-                if (MatchesSuffixPattern(segment, ban))
-                    return true;
-            }
-        }
-
-        var fileName = Path.GetFileName(path);
-        // Do not change to linq - this is called on every file in a project and linq would allocate too much space on large systems
-        foreach (var suf in rules.FileSuffixes)
-        {
-            if (fileName.EndsWith(suf, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-        return false;
-    }
-
-    public static bool MatchesSuffixPattern(string value, string pattern)
-    {
-        if (!pattern.Contains('*'))
-            return string.Equals(value, pattern, StringComparison.OrdinalIgnoreCase);
-
-        var suffix = pattern.TrimStart('*');
-        return value.EndsWith(suffix, StringComparison.OrdinalIgnoreCase);
-    }
+    
 
     private static bool IsProjectRoot(RelativePath path) =>
         string.Equals(path.Value, "./", StringComparison.Ordinal) ||
@@ -453,9 +352,5 @@ public sealed class ChangeDetector
     private static DateTime TrimMilliseconds(DateTime dt) =>
         new(dt.Year, dt.Month, dt.Day, dt.Hour, dt.Minute, dt.Second, 0, dt.Kind);
 
-    private static string GetRelative(string root, string path)
-    {
-        var rel = Path.GetRelativePath(root, path);
-        return rel.Replace('\\', '/');
-    }
+
 }
