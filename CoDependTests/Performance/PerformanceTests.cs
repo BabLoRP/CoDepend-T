@@ -4,6 +4,7 @@ using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Enums;
 using CoDepend.Domain.Models.Records;
+using CoDepend.Infra;
 using CoDepend.Infra.Renderers;
 
 namespace CoDependTests.Performance;
@@ -122,7 +123,8 @@ public class PerformanceTests
             }
 
             Changes = new ProjectChanges(changedByDir, [], []);
-            Builder = new DependencyGraphBuilder([new NullParser()], opts);
+            Logger logger = new Logger();
+            Builder = new DependencyGraphBuilder([new NullParser()], opts, logger);
         }
 
         public void Dispose()
