@@ -17,6 +17,7 @@ public sealed class UpdateGraphUseCase(
     IReadOnlyList<IDependencyParser> parsers,
     RendererBase renderer,
     ISnapshotManager snapshotManager,
+    ILogger logger,
     bool diff = false
     )
 {
@@ -24,7 +25,7 @@ public sealed class UpdateGraphUseCase(
     {
         var snapshotGraph = await snapshotManager.GetLastSavedDependencyGraphAsync(snapshotOptions, ct);
         var projectChanges = await ChangeDetector.GetProjectChangesAsync(parserOptions, snapshotGraph, ct);
-        var graph = await new DependencyGraphBuilder(parsers, baseOptions).GetGraphAsync(projectChanges, snapshotGraph, ct);
+        var graph = await new DependencyGraphBuilder(parsers, baseOptions, logger).GetGraphAsync(projectChanges, snapshotGraph, ct);
 
         if (renderOptions.Format != RenderFormat.None)
         {
