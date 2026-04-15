@@ -110,17 +110,7 @@ public static class DependencyGraphSerializer
             DependsOn = dependsOn,
         };
 
-        byte[] result = MessagePackSerializer.Serialize(dto, MsgPackOptions);
-        if(result.Length == 0)
-        {
-            Logger.LogWarning($"Size of the serialization was: {result.Length.ToString()}");
-        }
-        else
-        {
-            Logger.LogInformation($"Size of the serialization was: {result.Length.ToString()}");
-        }
-
-        return result;
+        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
