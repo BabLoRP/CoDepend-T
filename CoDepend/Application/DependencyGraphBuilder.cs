@@ -8,6 +8,7 @@ using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
 using CoDepend.Domain.Utils;
+using CoDepend.Infra;
 
 namespace CoDepend.Application;
 
@@ -100,7 +101,11 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
             }
         }
         catch (OperationCanceledException) { throw; }
-        catch (Exception ex) { await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}"); }
+        catch (Exception ex) 
+        {
+            string errorMessage = $"Error while processing '{item.Value}': {ex}";
+            Logger.LogError(errorMessage); 
+        }
     }
 
     private async Task<IEnumerable<(RelativePath Parent, RelativePath Item, IReadOnlyList<RelativePath> Deps)>> ParseAllAsync(
@@ -132,7 +137,8 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}");
+            string errorMessage = $"Error while processing '{item.Value}': {ex}";
+            Logger.LogError(errorMessage);
             return null;
         }
     }
