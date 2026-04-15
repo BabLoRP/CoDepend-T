@@ -8,11 +8,10 @@ using CoDepend.Domain.Interfaces;
 using CoDepend.Domain.Models;
 using CoDepend.Domain.Models.Records;
 using CoDepend.Domain.Utils;
-using CoDepend.Infra;
 
 namespace CoDepend.Application;
 
-public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dependencyParsers, BaseOptions _options)
+public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dependencyParsers, BaseOptions _options, ILogger logger)
 {
     public async Task<ProjectDependencyGraph> GetGraphAsync(
         ProjectChanges changes,
@@ -101,11 +100,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
             }
         }
         catch (OperationCanceledException) { throw; }
-        catch (Exception ex) 
-        {
-            string errorMessage = $"Error while processing '{item.Value}': {ex}";
-            Logger.LogError(errorMessage); 
-        }
+        catch (Exception ex) { logger.LogError(ex.Message, ex); }
     }
 
     private async Task<IEnumerable<(RelativePath Parent, RelativePath Item, IReadOnlyList<RelativePath> Deps)>> ParseAllAsync(
@@ -137,8 +132,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            string errorMessage = $"Error while processing '{item.Value}': {ex}";
-            Logger.LogError(errorMessage);
+            logger.LogError(ex.Message, ex);
             return null;
         }
     }
