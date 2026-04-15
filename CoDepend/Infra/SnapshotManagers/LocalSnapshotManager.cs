@@ -21,6 +21,14 @@ public sealed class LocalSnapshotManager(string _localDirName, string _localFile
         var path = Path.Combine(dir, _localFileName);
 
         var bytes = DependencyGraphSerializer.Serialize(graph);
+        if(bytes.Length == 0)
+        {
+            Logger.LogWarning($"Size of the serialization was: {bytes.Length.ToString()}");
+        }
+        else
+        {
+            Logger.LogInformation($"Size of the serialization was: {bytes.Length.ToString()}");
+        }
         await File.WriteAllBytesAsync(path, bytes, ct);
     }
 
