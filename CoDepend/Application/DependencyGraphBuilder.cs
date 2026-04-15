@@ -11,7 +11,7 @@ using CoDepend.Domain.Utils;
 
 namespace CoDepend.Application;
 
-public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dependencyParsers, BaseOptions _options)
+public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dependencyParsers, BaseOptions _options, ILogger logger)
 {
     public async Task<ProjectDependencyGraph> GetGraphAsync(
         ProjectChanges changes,
@@ -100,7 +100,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
             }
         }
         catch (OperationCanceledException) { throw; }
-        catch (Exception ex) { await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}"); }
+        catch (Exception ex) { logger.LogError(ex.Message, ex); }
     }
 
     private async Task<IEnumerable<(RelativePath Parent, RelativePath Item, IReadOnlyList<RelativePath> Deps)>> ParseAllAsync(
@@ -132,7 +132,7 @@ public sealed class DependencyGraphBuilder(IReadOnlyList<IDependencyParser> _dep
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            await Console.Error.WriteLineAsync($"Error while processing '{item.Value}': {ex}");
+            logger.LogError(ex.Message, ex);
             return null;
         }
     }
