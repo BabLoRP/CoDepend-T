@@ -1,21 +1,16 @@
 using System;
+using CoDepend.Domain.Interfaces;
 
 namespace CoDepend.Infra;
 
-public static class Logger
+public sealed class Logger : ILogger
 {
-    public static void LogInformation(string Info)
-    {
-        Console.WriteLine("INFO: " + Info);
-    }
+    public void LogInformation(string message)
+        => Console.WriteLine("INFO: " + message);
 
-    public static void LogWarning(string Warning)
-    {
-        Console.WriteLine("WARN: " + Warning);
-    }
+    public void LogWarning(string message)
+        => Console.WriteLine("WARN: " + message);
 
-    public static void LogError(string Error)
-    {
-        Console.WriteLine("ERROR: " + Error);
-    }
+    public void LogError(string message, Exception? ex = null)
+        => Console.WriteLine($"ERROR: {message} {ex}");
 }
