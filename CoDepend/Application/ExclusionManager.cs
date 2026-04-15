@@ -2,10 +2,11 @@ namespace CoDepend.Application;
 
 public sealed class ExclusionManager
 {
-    private sealed record ExclusionRule
-    {
-        
-    }
+    private sealed record ExclusionRule(
+        string[] DirPrefixes,
+        string[] Segments,
+        string[] FileSuffixes
+    );
 
     public static bool IsExcluded()
     {
