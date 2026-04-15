@@ -112,17 +112,16 @@ public static class DependencyGraphSerializer
 
         byte[] serializedResult = MessagePackSerializer.Serialize(dto, MsgPackOptions);
 
-        if (serializedResult.Length < 0)
+        if (serializedResult.Length > 0)
         {
-            Logger.LogInformation($"Size of serialized result: {serializedResult.Length.ToString()}");
+            Logger.LogInformation($"Size of serialized result: {serializedResult.Length}");
         }
         else
         {
             Logger.LogWarning($"The serialized result is empty");
         }
-        
 
-        return MessagePackSerializer.Serialize(dto, MsgPackOptions);
+        return serializedResult;
     }
 
     public static ProjectDependencyGraph Deserialize(byte[] data, string projectRoot)
